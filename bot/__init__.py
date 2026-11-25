@@ -25,6 +25,7 @@ from bot import (
     translator,
     app_vars,
 )
+from bot.youtube_login_watch import YouTubeLoginWatch
 
 
 class Bot:
@@ -75,6 +76,7 @@ class Bot:
         self.service_manager = services.ServiceManager(self)
         self.module_manager = modules.ModuleManager(self)
         self.command_processor = commands.CommandProcessor(self)
+        self.youtube_login_watch = YouTubeLoginWatch(self)
         
         # JC command tracking
         self.jc_requested_by_user_id: Optional[int] = None
@@ -100,6 +102,7 @@ class Bot:
         self.player.run()
         self.tt_player_connector.start()
         self.command_processor.run()
+        self.youtube_login_watch.start()
         logging.info("Started")
         logging.info(f"Processing {len(self.config.general.start_commands)} startup command(s)...")
         startup_context_user = User(
@@ -191,6 +194,7 @@ class Bot:
                 time.sleep(0.5)
             except Exception as e:
                 logging.error(f"Error sending shutdown message: {e}")
+        self.youtube_login_watch.stop()
         self.player.close()
         self.ttclient.close()
         self.tt_player_connector.close()
