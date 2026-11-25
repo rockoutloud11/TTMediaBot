@@ -41,6 +41,11 @@ class PlayPauseCommand(Command):
         )
 
     def __call__(self, arg: str, user: User) -> Optional[str]:
+        from bot.modules.music_links import is_music_link
+
+        if arg and is_music_link(arg.strip()):
+            # A pasted Spotify/Deezer link: play it like 'u' does.
+            return PlayUrlCommand(self.command_processor)(arg.strip(), user)
         if arg:
             self.send_message_async(
                 self.translator.translate("Searching..."),
