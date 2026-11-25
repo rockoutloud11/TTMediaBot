@@ -4,6 +4,12 @@ All notable updates to this fork are documented here, in reverse chronological o
 
 ---
 
+## 🔔 November 25, 2026 — Signed-Out Warning Reaches Server Admins
+
+- The signed-out warning now also goes to users logged in with a TeamTalk server admin account, matching who can already use admin commands. Before, only usernames on the bot's admin list got it.
+
+---
+
 ## 🎶 November 25, 2026 — Spotify and Deezer Links
 
 - **`u`, `qa` and `p` accept Spotify and Deezer links** for tracks, albums and playlists (and Spotify artist pages, short links, and links with a language prefix). The bot reads only the titles and artists from the link, no account or key, then finds each song on YouTube Music.

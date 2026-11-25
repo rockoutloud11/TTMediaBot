@@ -49,7 +49,7 @@ SABR does not replace cookies: if the account is no longer signed in, YouTube on
 
 ## 🔔 Signed-Out Warning
 
-When YouTube stops accepting a bot's cookies, it quietly treats the bot as signed out: songs fail instantly or stop after about a minute, and nothing says why. The bot now checks its YouTube login every 30 minutes (one request to youtube.com) and sends a private message to every online admin when the login is lost, and again when it works again. If no admin is online, it tries again at the next check.
+When YouTube stops accepting a bot's cookies, it quietly treats the bot as signed out: songs fail instantly or stop after about a minute, and nothing says why. The bot now checks its YouTube login every 30 minutes (one request to youtube.com) and sends a private message to every online admin (anyone on the bot's admin list, or logged in with a TeamTalk server admin account) when the login is lost, and again when it works again. If no admin is online, it tries again at the next check.
 
 Admins can check at any time with the **yl** command.
 

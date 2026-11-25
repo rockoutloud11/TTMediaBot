@@ -29,7 +29,10 @@ class FakeTT:
         return 1
 
     def getServerUsers(self):
-        return [SimpleNamespace(nUserID=uid, szUsername=name) for uid, name in self.online]
+        return [
+            SimpleNamespace(nUserID=uid, szUsername=name, uUserType=2 if name == "serveradmin" else 1)
+            for uid, name in self.online
+        ]
 
 
 class FakeTTClient:
@@ -64,6 +67,11 @@ class YouTubeLoginWatchTest(TestCase):
         self.assertEqual(len(tt.sent), 1)
         self.assertEqual(tt.sent[0][0], 2)
         self.assertIn("no longer accepts", tt.sent[0][1])
+
+    def test_server_admin_accounts_are_warned_too(self):
+        watch, tt = make_watch([OUT], online=[(1, "bot"), (5, "serveradmin"), (3, "guest")])
+        watch.check()
+        self.assertEqual([user for user, _ in tt.sent], [5])
 
     def test_retries_until_an_admin_is_online(self):
         watch, tt = make_watch([OUT, OUT, OUT], online=[(1, "bot"), (3, "guest")])
