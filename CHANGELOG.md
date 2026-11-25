@@ -4,6 +4,15 @@ All notable updates to this fork are documented here, in reverse chronological o
 
 ---
 
+## 🎶 November 25, 2026 — Spotify and Deezer Links
+
+- **`u`, `qa` and `p` accept Spotify and Deezer links** for tracks, albums and playlists (and Spotify artist pages, short links, and links with a language prefix). The bot reads only the titles and artists from the link, no account or key, then finds each song on YouTube Music.
+- **Albums and playlists queue instantly.** Each song is searched on YouTube just before it plays (up to 100 songs per link).
+- Titles are tidied before searching ("(feat. ...)", "[From ...]" and "- 2022 Remaster" are dropped).
+- New `find_video_id` helper in the YouTube bridge client; `yt` and `ytm` resolve a track that carries a `search_query`.
+
+---
+
 ## ➕ November 25, 2026 — Queue Search Results and Links
 
 - **`qa NUMBER`** adds result NUMBER from your last search list (`sr` mode) to the queue instead of playing it right away. The list is kept, so several results can be added one after another. A number only counts as a result number while you have a list and it is in range, so `qa 1999` still searches.

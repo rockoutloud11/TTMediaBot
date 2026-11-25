@@ -53,6 +53,15 @@ When YouTube stops accepting a bot's cookies, it quietly treats the bot as signe
 
 Admins can check at any time with the **yl** command.
 
+## 🎶 Spotify and Deezer Links
+
+Paste a Spotify or Deezer link after **u** (play) or **qa** (queue), or after **p**, and the bot plays those songs from YouTube Music. Spotify and Deezer never supply the audio: the bot only reads the song titles and artists from the link (no account or key needed), then searches YouTube Music for each one just before it plays. Because of that, a song is occasionally matched to a different version (a live cut or a cover), and a song with no YouTube match is skipped.
+
+- **Tracks, albums and playlists** work on both sites. Spotify artist links add the artist's popular songs.
+- **Short links** (`spotify.link`, `link.deezer.com`) work too.
+- At most the first 100 songs of an album or playlist are added (Spotify's public pages give about 50 for big playlists). Private playlists cannot be read.
+- Albums and playlists queue instantly; each song is looked up as its turn comes.
+
 ## 🔀 Switching from JoaoDEVWHADS/TTMediaBot
 
 Installs of João's version keep updating from his repository; nothing here changes them. To move an existing install over to this version, run this from its `TTMediaBot` folder:
@@ -217,7 +226,7 @@ Send these commands to the bot via private message (PM) or in the channel (if en
 | :--- | :--- | :--- |
 | **h** | | Shows command help. |
 | **p** | `[query]` | Plays tracks found for query. If no query, pauses/resumes. |
-| **u** | `[url]` | Plays a stream/file from a direct URL. |
+| **u** | `[url]` | Plays a stream/file from a direct URL. Spotify and Deezer track, album and playlist links work too (the songs are found on YouTube Music). |
 | **s** | | Stops playback. |
 | **n** | `[number/?]` | Plays the next track, jumps to a positive or negative track index, or reports the current position with `?`. |
 | **b** | | Plays the previous track. |
@@ -242,7 +251,7 @@ Send these commands to the bot via private message (PM) or in the channel (if en
 | **adsc** | | Toggles local download mode: saves files locally to the VPS instead of uploading. |
 | **r** | `[number]` | Plays from Recents. `r` lists recents. |
 | **jc** | | Makes the bot join your current channel. |
-| **qa** | `[query / number / url]` | Adds to the queue: the top result for a search, result NUMBER from your last `sr` search list (the list is kept, so you can add several), or the track(s) at a URL (a playlist link adds every track). Starts playing if nothing is. |
+| **qa** | `[query / number / url]` | Adds to the queue: the top result for a search, result NUMBER from your last `sr` search list (the list is kept, so you can add several), or the track(s) at a URL (a playlist link adds every track; Spotify and Deezer links work too). Starts playing if nothing is. |
 | **ql** | | Lists all tracks currently in the queue. |
 | **qr** | `[number]` | Removes a specific track from the queue. |
 | **qc** | | Clears the entire queue. |
