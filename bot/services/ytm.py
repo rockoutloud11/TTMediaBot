@@ -113,6 +113,14 @@ class YtmService(_Service):
         if process:
             info = dict(extra_info or {})
             video_id = info.get("videoId") or info.get("id")
+            if not video_id and info.get("search_query"):
+                # A song from a Spotify/Deezer link: find it on YouTube Music now.
+                video_id = self._bridge.find_video_id(info["search_query"], mode="music")
+                if not video_id:
+                    raise errors.ServiceError(
+                        f"Nothing found on YouTube for {info['search_query']!r}"
+                    )
+                info["videoId"] = video_id
             resolved = self._bridge.resolve(url=url if not video_id else "", video_id=video_id or "")
             stream = {**info, **resolved}
             stream_url = resolved.get("url")

@@ -177,6 +177,15 @@ class YtService(_Service):
             logging.info(f"YT Get (Fast Dynamic) finished in {duration:.2f}ms for {title}")
             return [original_track]
 
+        if not video_id and info.get("search_query"):
+            # A song from a Spotify/Deezer link: find it on YouTube now.
+            video_id = self._bridge.find_video_id(info["search_query"], mode="music")
+            if not video_id:
+                raise errors.ServiceError(
+                    f"Nothing found on YouTube for {info['search_query']!r}"
+                )
+            info["videoId"] = video_id
+
         if not video_id:
             if not url:
                 raise errors.ServiceError("No YouTube video ID available for stream resolution")

@@ -110,6 +110,13 @@ class YouTubeBridge:
     ) -> dict[str, Any]:
         return self._post("/search", query=query, limit=limit, mode=mode)
 
+    def find_video_id(self, query: str, mode: str = "music") -> str:
+        """Returns the video id of the top YouTube result for query ('' if none)."""
+        entries = self.search(query, 1, mode=mode).get("entries", [])
+        if not entries:
+            return ""
+        return entries[0].get("videoId") or entries[0].get("id") or ""
+
     def login_status(self, force: bool = False) -> dict[str, Any]:
         """Asks the bridge whether YouTube still accepts this bot's cookies."""
         return self._post("/login-status", timeout=(5, 30), force=force)
