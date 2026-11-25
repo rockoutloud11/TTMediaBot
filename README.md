@@ -55,7 +55,7 @@ Admins can check at any time with the **yl** command.
 
 ## 🔀 Switching from JoaoDEVWHADS/TTMediaBot
 
-Existing installs keep updating from João's repository until they are pointed here. From your `TTMediaBot` folder, run:
+Installs of João's version keep updating from his repository; nothing here changes them. To move an existing install over to this version, run this from its `TTMediaBot` folder:
 
 ```bash
 git remote set-url origin https://github.com/rockoutloud11/TTMediaBot.git
@@ -242,13 +242,13 @@ Send these commands to the bot via private message (PM) or in the channel (if en
 | **adsc** | | Toggles local download mode: saves files locally to the VPS instead of uploading. |
 | **r** | `[number]` | Plays from Recents. `r` lists recents. |
 | **jc** | | Makes the bot join your current channel. |
-| **qa** | `[query]` | Adds a track to the queue. |
+| **qa** | `[query / number / url]` | Adds to the queue: the top result for a search, result NUMBER from your last `sr` search list (the list is kept, so you can add several), or the track(s) at a URL (a playlist link adds every track). Starts playing if nothing is. |
 | **ql** | | Lists all tracks currently in the queue. |
 | **qr** | `[number]` | Removes a specific track from the queue. |
 | **qc** | | Clears the entire queue. |
 | **qs** | | Skips current track and plays the next one from the queue. |
 | **sr** | `[on/off]` | Toggles Search Results Mode. When active, `p QUERY` shows a numbered list instead of playing immediately. Save with `sc`. |
-| **sl** | `[number]` | Selects and plays result NUMBER from the last `sr` search list. |
+| **sl** | `[number]` | Selects and plays result NUMBER from the last `sr` search list right away. Use `qa NUMBER` to queue it instead. |
 | **slc** | `[number]` | Sets how many results are shown in `sr` mode. The volatile count defaults to 1 after every restart; no argument shows the current count. |
 | **a** | | Shows about info. |
 

@@ -4,6 +4,14 @@ All notable updates to this fork are documented here, in reverse chronological o
 
 ---
 
+## ➕ November 25, 2026 — Queue Search Results and Links
+
+- **`qa NUMBER`** adds result NUMBER from your last search list (`sr` mode) to the queue instead of playing it right away. The list is kept, so several results can be added one after another. A number only counts as a result number while you have a list and it is in range, so `qa 1999` still searches.
+- **`qa URL`** adds the track(s) behind a link to the queue, like `u` but without interrupting what is playing. A playlist link adds every track.
+- If nothing is playing, the first track starts and the rest are queued.
+
+---
+
 ## 🔔 November 25, 2026 — Signed-Out Warning
 
 - **The bot warns its admins when YouTube stops accepting its cookies.** Every 30 minutes the bot asks the YouTube bridge whether youtube.com still treats its cookies as signed in. When the login is lost, every online admin gets a private message (retried at each check until an admin is online), and another when it works again.
@@ -16,7 +24,7 @@ All notable updates to this fork are documented here, in reverse chronological o
 
 - **SABR audio streaming in the YouTube bridge.** YouTube stopped sending plain stream links (`No valid URL to decipher` on every song). The bridge now fetches audio over SABR with `googlevideo` 5.0.1 and serves it to mpv from `/sabr/<videoId>`. Range requests (seeking) work, stalled streams end cleanly after 15 seconds, and `YOUTUBE_BRIDGE_SABR=0` turns it off.
 - **Cookie guide updated.** Export cookies from a Firefox private window: Chrome exports (even Incognito) were signed out within about 25 minutes in testing, while Firefox exports kept working for days. Songs failing instantly or stopping at one minute usually means the cookies need replacing.
-- **Repository moved to [rockoutloud11/TTMediaBot](https://github.com/rockoutloud11/TTMediaBot).** The installer, `update.sh` and the auto-updater now fetch from here, and installs still pointing at JoaoDEVWHADS/TTMediaBot are switched over on their next update.
+- **Repository moved to [rockoutloud11/TTMediaBot](https://github.com/rockoutloud11/TTMediaBot).** The installer, `update.sh` and the auto-updater now fetch from here, and an install that already runs this version but still has JoaoDEVWHADS/TTMediaBot as its Git remote is pointed here on its next update. Installs running João's version are not affected.
 
 ---
 
