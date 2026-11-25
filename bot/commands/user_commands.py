@@ -1,6 +1,7 @@
 from __future__ import annotations
 import logging
 import os
+import re
 import tempfile
 import zipfile
 from typing import List, Optional, TYPE_CHECKING
@@ -54,7 +55,7 @@ class PlayPauseCommand(Command):
                     lines = [self.translator.translate("Search results:")]
                     for i, track in enumerate(track_list):
                         lines.append(f"{i + 1}: {track.name}")
-                    lines.append(self.translator.translate("Use 'sl NUMBER' to select a track"))
+                    lines.append(self.translator.translate("Use 'sl NUMBER' to play a track now, or 'qa NUMBER' to add it to the queue"))
                     return "\n".join(lines)
 
                 # Normal mode: request only 1 result and play immediately
@@ -800,13 +801,45 @@ class QueueAddCommand(Command):
     @property
     def help(self) -> str:
         return self.translator.translate(
-            "QUERY Searches for a track and adds it to the queue. If nothing is playing, starts immediately"
+            "QUERY, NUMBER or URL Adds to the queue: a search for QUERY (top result), result NUMBER from your last search list, or the track(s) at URL (a playlist adds every track). If nothing is playing, starts immediately"
         )
 
+    @staticmethod
+    def _is_url(arg: str) -> bool:
+        return re.match(r"^[A-Za-z][A-Za-z0-9+.-]*://\S+$", arg) is not None
+
     def __call__(self, arg: str, user: User) -> Optional[str]:
+        arg = arg.strip()
         if not arg:
             raise errors.InvalidArgumentError()
 
+        # qa NUMBER: a result from this user's last search list. Only while the
+        # user has a list and the number is in range, so 'qa 1999' still searches.
+        # The list is kept, so several results can be added one after another.
+        results = self.command_processor.pending_search_results.get(user.id)
+        if results and arg.isdigit() and 1 <= int(arg) <= len(results):
+            return self._enqueue([results[int(arg) - 1]], user)
+
+        # qa URL: the track(s) behind a link, like 'u' but queued.
+        if self._is_url(arg):
+            self.run_async(
+                self.ttclient.send_message,
+                self.translator.translate("Loading URL / playlist..."),
+                user,
+            )
+            try:
+                tracks = self.module_manager.streamer.get(arg, user.is_admin)
+            except errors.IncorrectProtocolError:
+                return self.translator.translate("Incorrect protocol")
+            except errors.ServiceError:
+                return self.translator.translate("Cannot process stream URL")
+            except errors.PathNotFoundError:
+                return self.translator.translate("The path cannot be found")
+            if not tracks:
+                return self.translator.translate("Nothing is found for your query")
+            return self._enqueue(list(tracks), user)
+
+        # qa QUERY: search and queue the top result.
         self.run_async(
             self.ttclient.send_message,
             self.translator.translate("Searching..."),
@@ -822,36 +855,61 @@ class QueueAddCommand(Command):
                 "The selected service is currently unavailable"
             )
 
-        track = track_list[0]
+        return self._enqueue(
+            [track_list[0]],
+            user,
+            timing_context={
+                "kind": "search",
+                "started_at": self._last_search_started_at,
+                "query": self._last_search_query,
+            },
+        )
 
-        # Se nada está tocando, inicia imediatamente
+    def _enqueue(self, tracks: List, user: User, timing_context: Optional[dict] = None) -> str:
+        """Plays the first track if nothing is playing, queues the rest."""
+        started = None
         if self.player.state == State.Stopped:
-            self.run_async(
-                self.player.play,
-                [track],
-                timing_context={
-                    "kind": "search",
-                    "started_at": self._last_search_started_at,
-                    "query": self._last_search_query,
-                },
-            )
-            return self.translator.translate("Playing {}").format(track.name)
+            started = tracks[0]
+            tracks = tracks[1:]
+            if timing_context:
+                self.run_async(self.player.play, [started], timing_context=timing_context)
+            else:
+                self.run_async(self.player.play, [started])
 
-        # Caso contrário, enfileira
-        position = self.player.queue.add(track)
+        first_position = None
+        for track in tracks:
+            position = self.player.queue.add(track)
+            if first_position is None:
+                first_position = position
 
         if self.config.general.send_channel_messages:
-            self.run_async(
-                self.ttclient.send_message,
-                self.translator.translate(
+            if started is not None and not tracks:
+                announcement = self.translator.translate(
+                    "{nickname} requested {request}"
+                ).format(nickname=user.nickname, request=started.name)
+            elif len(tracks) == 1 and started is None:
+                announcement = self.translator.translate(
                     "{nickname} added to queue: {track}"
-                ).format(nickname=user.nickname, track=track.name),
-                type=2,
-            )
+                ).format(nickname=user.nickname, track=tracks[0].name)
+            else:
+                announcement = self.translator.translate(
+                    "{nickname} added {count} tracks to the queue"
+                ).format(nickname=user.nickname, count=len(tracks) + (1 if started else 0))
+            self.run_async(self.ttclient.send_message, announcement, type=2)
 
+        if started is not None and not tracks:
+            return self.translator.translate("Playing {}").format(started.name)
+        if started is not None:
+            return self.translator.translate(
+                "Playing {track}. Added {count} more to the queue"
+            ).format(track=started.name, count=len(tracks))
+        if len(tracks) == 1:
+            return self.translator.translate(
+                "Added to queue [{position}]: {track}"
+            ).format(position=first_position, track=tracks[0].name)
         return self.translator.translate(
-            "Added to queue [{position}]: {track}"
-        ).format(position=position, track=track.name)
+            "Added {count} tracks to the queue, positions {first} to {last}"
+        ).format(count=len(tracks), first=first_position, last=first_position + len(tracks) - 1)
 
 
 class QueueListCommand(Command):
