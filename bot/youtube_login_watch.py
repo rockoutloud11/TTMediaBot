@@ -21,6 +21,7 @@ if TYPE_CHECKING:
 FIRST_CHECK_DELAY_SECONDS = 90
 CHECK_INTERVAL_SECONDS = 30 * 60
 
+SERVER_ADMIN_USER_TYPE = 2
 SIGNED_IN = "in"
 SIGNED_OUT = "out"
 
@@ -124,7 +125,7 @@ class YouTubeLoginWatch:
             self._warning_delivered = False
 
     def _message_admins(self, text: str) -> int:
-        """Sends text privately to every online admin. Returns how many got it."""
+        """Sends text privately to every online admin (bot admin list or server admin account). Returns how many got it."""
         ttclient = self._bot.ttclient
         admins = {name for name in self._bot.config.teamtalk.users.admins}
         try:
@@ -137,7 +138,12 @@ class YouTubeLoginWatch:
         for tt_user in online:
             if tt_user.nUserID == my_id:
                 continue
-            if _text(tt_user.szUsername) not in admins:
+            # Same rule the commands use: the bot's admin list, or a TeamTalk
+            # server admin account (user type 2).
+            if (
+                _text(tt_user.szUsername) not in admins
+                and getattr(tt_user, "uUserType", 0) != SERVER_ADMIN_USER_TYPE
+            ):
                 continue
             try:
                 ttclient.send_message(text, user=tt_user.nUserID)
