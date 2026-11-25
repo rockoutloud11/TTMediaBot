@@ -11,7 +11,7 @@ if [ "$EUID" -ne 0 ]; then
 fi
 
 
-REPO_URL="https://github.com/JoaoDEVWHADS/TTMediaBot.git"
+REPO_URL="https://github.com/rockoutloud11/TTMediaBot.git"
 
 # Retry package-manager commands when another apt/dpkg process temporarily holds a lock.
 run_with_retries() {
@@ -103,6 +103,9 @@ if [ "$CURRENT_IS_REPO" = false ]; then
     if [ -d "$DIR_NAME" ]; then
         echo "Directory '$DIR_NAME' already exists. Updating..."
         cd "$DIR_NAME" || exit
+        if git remote get-url origin 2>/dev/null | grep -qi "JoaoDEVWHADS/TTMediaBot"; then
+            git remote set-url origin "$REPO_URL"
+        fi
         git pull
     else
         echo "--- Cloning Repository ---"

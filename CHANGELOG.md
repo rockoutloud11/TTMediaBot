@@ -4,6 +4,14 @@ All notable updates to this fork are documented here, in reverse chronological o
 
 ---
 
+## 🎧 November 25, 2026 — SABR Streaming and New Home
+
+- **SABR audio streaming in the YouTube bridge.** YouTube stopped sending plain stream links (`No valid URL to decipher` on every song). The bridge now fetches audio over SABR with `googlevideo` 5.0.1 and serves it to mpv from `/sabr/<videoId>`. Range requests (seeking) work, stalled streams end cleanly after 15 seconds, and `YOUTUBE_BRIDGE_SABR=0` turns it off.
+- **Cookie guide updated.** Export cookies from a Firefox private window: Chrome exports (even Incognito) were signed out within about 25 minutes in testing, while Firefox exports kept working for days. Songs failing instantly or stopping at one minute usually means the cookies need replacing.
+- **Repository moved to [rockoutloud11/TTMediaBot](https://github.com/rockoutloud11/TTMediaBot).** The installer, `update.sh` and the auto-updater now fetch from here, and installs still pointing at JoaoDEVWHADS/TTMediaBot are switched over on their next update.
+
+---
+
 ## 🔧 Unreleased — Generic Stream Resolver
 
 - Added an extensible page-to-media resolver registry for the `u` command.

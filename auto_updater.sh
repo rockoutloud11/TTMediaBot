@@ -86,6 +86,11 @@ while true; do
     # Get current branch name
     BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "master")
     
+    # Installs made from JoaoDEVWHADS/TTMediaBot: fetch from this repository instead.
+    if git remote get-url origin 2>/dev/null | grep -qi "JoaoDEVWHADS/TTMediaBot"; then
+        git remote set-url origin "https://github.com/rockoutloud11/TTMediaBot.git"
+    fi
+
     # Check remote hash using ls-remote (no rate limits, no object download)
     REMOTE_HASH=$(git ls-remote origin -h "refs/heads/$BRANCH" 2>/dev/null | awk '{print $1}' | tr -d '[:space:]')
     LOCAL_HASH=$(git rev-parse HEAD 2>/dev/null | tr -d '[:space:]')

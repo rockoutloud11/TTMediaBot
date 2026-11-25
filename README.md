@@ -1,12 +1,14 @@
 # TTMediaBot
 
-**Hello! I am João Almeida.** Welcome to my **TTMediaBot** fork, a comprehensive media streaming bot for TeamTalk 5. This repository is focused on delivering constant improvements, stability, and new features, such as exclusive support for YouTube Music.
+A comprehensive media streaming bot for TeamTalk 5, with a focus on stability and YouTube Music support.
 
-> 🔗 **My Repository:** [https://github.com/JoaoDEVWHADS/TTMediaBot](https://github.com/JoaoDEVWHADS/TTMediaBot)
+> 🔗 **Repository:** [https://github.com/rockoutloud11/TTMediaBot](https://github.com/rockoutloud11/TTMediaBot)
+>
+> 🐛 **Problems or ideas?** Open an issue: [https://github.com/rockoutloud11/TTMediaBot/issues](https://github.com/rockoutloud11/TTMediaBot/issues)
 
 ---
 
-> **Note:** This repository is a fork of the [original TTMediaBot](https://github.com/gumerov-amir/TTMediaBot).
+> **Credits:** This project continues [João Almeida's TTMediaBot fork](https://github.com/JoaoDEVWHADS/TTMediaBot), which is itself based on the [original TTMediaBot](https://github.com/gumerov-amir/TTMediaBot) by Amir Gumerov, Vladislav Kopylov, Beqa Gozalishvili and Kirill Belousov. Nearly everything described below is their work; the changes made here are listed under [Latest Updates](#-latest-updates) and in the [changelog](CHANGELOG.md).
 
 A feature-rich media streaming bot for TeamTalk 5, capable of playing music from various services (YouTube, YouTube Music, local files, URLs) with advanced control features.
 
@@ -24,13 +26,37 @@ This fork includes several modifications and optimizations:
   > On `x86_64` systems, the installation remains untouched and minimal. On `ARM` systems, the installer and Dockerfile conditionally install additional dependencies (such as `libportaudio2`) required by the ARM version of the TeamTalk SDK to run.
 - **Universal Linux Distribution Support:** The installer (`ttbotdocker.sh` / `install_git_clone.sh`) now dynamically supports automatically setting up Docker, `ffmpeg`, and dependencies on any major distribution (Ubuntu, Debian, CentOS, RHEL, Fedora, Rocky Linux, AlmaLinux, Raspbian, Arch, etc.) using the official universal installer and dynamic package manager fallbacks for `jq`.
 - **Docker Containerization:** The image uses Debian Trixie, Python 3.13, Node.js 24, and current stable-distribution playback packages. The bundled TeamTalk 5.8.1 SDK retains isolated OpenSSL 1.1 compatibility libraries.
-- **Proven Stability:** Since I first encountered this bot in 2021, the adaptations made to work around YouTube's restrictions, combined with the optimizations from 2021/2022, have proven to be excellent and reliable
+- **Proven Stability:** The adaptations made since 2021 to work around YouTube's restrictions, combined with the optimizations from 2021/2022, have proven reliable over years of use
 
 ## 🆕 Latest Updates
 
 To view the complete history of updates, including all new features, bug fixes, and optimizations, please check the changelog.
 
 > 📋 **[See full changelog →](CHANGELOG.md)**
+
+## 🎧 SABR Streaming (November 2026)
+
+In late November 2026 YouTube stopped including plain stream links for songs. The bridge found each song, then failed instantly with `No valid URL to decipher`, so the bot skipped every track.
+
+The YouTube bridge now streams audio over **SABR**, the protocol YouTube's own web player uses, with LuanRT's [`googlevideo`](https://github.com/LuanRT/googlevideo) package:
+
+- `/resolve` returns a link to the bridge itself (`/sabr/<videoId>`), and the bridge downloads the audio over SABR and serves it to mpv like a normal file. Seeking works.
+- A typical song arrives in full in about 1 to 2 seconds.
+- If YouTube stops sending partway (for example, when the cookies have stopped working), the bridge ends the stream cleanly after 15 seconds so the bot moves on instead of hanging.
+- Set `YOUTUBE_BRIDGE_SABR=0` on the YouTube service to go back to direct links only.
+
+SABR does not replace cookies: if the account is no longer signed in, YouTube only serves about the first minute of each song. See [How to Obtain Cookies](#how-to-obtain-cookies).
+
+## 🔀 Switching from JoaoDEVWHADS/TTMediaBot
+
+Existing installs keep updating from João's repository until they are pointed here. From your `TTMediaBot` folder, run:
+
+```bash
+git remote set-url origin https://github.com/rockoutloud11/TTMediaBot.git
+sudo ./update.sh
+```
+
+After that first update, `update.sh` and the auto-updater keep fetching from this repository. Bot configurations and cookies are kept.
 
 ## 🐳 Docker Runtime Refresh & Player Compatibility
 
@@ -148,7 +174,7 @@ This fork includes an advanced link-based downloading system that allows users t
 
 1.  **Download and run the installer:**
     ```bash
-    wget https://raw.githubusercontent.com/JoaoDEVWHADS/TTMediaBot/master/install_git_clone.sh
+    wget https://raw.githubusercontent.com/rockoutloud11/TTMediaBot/master/install_git_clone.sh
     sudo chmod +x install_git_clone.sh
     sudo ./install_git_clone.sh
     ```
@@ -415,7 +441,7 @@ If you already have bots installed and just want to update the code without usin
 **How to use:**
 1. Download the script to your `TTMediaBot` folder:
    ```bash
-   wget https://raw.githubusercontent.com/JoaoDEVWHADS/TTMediaBot/master/update.sh
+   wget https://raw.githubusercontent.com/rockoutloud11/TTMediaBot/master/update.sh
    chmod +x update.sh
    ```
 2. Run it:
@@ -453,23 +479,21 @@ YouTube and YouTube Music have implemented restrictions that require authenticat
 
 ### How to Obtain Cookies
 
-1. **Login to your Google account** in your browser (Chrome, Edge, or Firefox)
+Use a **Firefox private window**. Cookies exported from Chrome (even from an Incognito window) can stop working within about half an hour, while cookies exported this way have kept working for days.
 
-2. **Install the Get cookies.txt extension:**
-   - Chrome/Edge: [Get cookies.txt LOCALLY](https://chrome.google.com/webstore/detail/get-cookiestxt/bgaddhkoddajcdgocldbbfleckgcbcid)
-   - Firefox: [cookies.txt](https://addons.mozilla.org/en-US/firefox/addon/cookies-txt/)
+1. **Install the [cookies.txt](https://addons.mozilla.org/en-US/firefox/addon/cookies-txt/) add-on** in Firefox.
 
-3. **Navigate to YouTube:** Go to `youtube.com`
+2. **Allow it in private windows:** open Add-ons and Themes (`Ctrl+Shift+A`), select **cookies.txt**, and set **Run in Private Windows** to **Allow**.
 
-4. **Export cookies:**
-   - Click on the **Extensions menu** in your browser
-   - Click on the **Get cookies.txt LOCALLY** extension icon
-   - Click **"Export All Cookies"**
-   - Click the **Download button**
-   - Your browser may ask where to save the file - choose a location you can access
-   - If not prompted, the file will be in your **Downloads** folder
+3. **Open a private window** (`Ctrl+Shift+P`), go to `youtube.com`, and sign in with the account the bot should use.
 
-5. **Place the file** in an accessible location on your server (e.g., `/root/cookies.txt`)
+4. **Export cookies:** use the cookies.txt add-on to export the cookies for the current site. The file is saved to your **Downloads** folder.
+
+5. **Close the private window without signing out**, and don't use that login anywhere else. Signing out, or using the same session in a normal browser, invalidates the exported cookies.
+
+6. **Place the file** in an accessible location on your server (e.g., `/root/cookies.txt`)
+
+> **If songs fail instantly or stop after about one minute,** the cookies have most likely stopped working. YouTube then treats the bot as signed out and only serves the first minute of each song, while every request still appears to succeed. Export a fresh set as described above.
 
 ### Getting the Cookies File Path
 

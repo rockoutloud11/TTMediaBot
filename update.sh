@@ -301,9 +301,19 @@ update_and_fix_permissions() {
     echo ""
 
     # 2. Check for Updates (GitHub API vs Local Date)
-    REPO_OWNER="JoaoDEVWHADS"
+    REPO_OWNER="rockoutloud11"
     REPO_NAME="TTMediaBot"
     BRANCH="master"
+
+    # Installs made from JoaoDEVWHADS/TTMediaBot still fetch from there.
+    # Point them at this repository instead (only if origin is Joao's).
+    if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+        CURRENT_ORIGIN=$(git remote get-url origin 2>/dev/null || true)
+        if echo "$CURRENT_ORIGIN" | grep -qi "JoaoDEVWHADS/TTMediaBot"; then
+            echo -e "${YELLOW}Switching updates from JoaoDEVWHADS to ${REPO_OWNER}/${REPO_NAME}...${NC}"
+            git remote set-url origin "https://github.com/${REPO_OWNER}/${REPO_NAME}.git"
+        fi
+    fi
     
     echo -e "${YELLOW}Checking for updates...${NC}"
     
