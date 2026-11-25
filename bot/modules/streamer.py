@@ -6,6 +6,7 @@ from urllib.parse import urlparse
 from bot import errors
 from bot.player.enums import TrackType
 from bot.player.track import Track
+from bot.modules import music_links
 from bot.modules.stream_resolvers import StreamResolverRegistry
 
 if TYPE_CHECKING:
@@ -19,7 +20,41 @@ class Streamer:
         self.service_manager = bot.service_manager
         self.stream_resolvers = StreamResolverRegistry()
 
+    def _music_link_tracks(self, url: str) -> List[Track]:
+        """Spotify/Deezer link: one lazy YouTube track per song behind it.
+
+        Each song is looked up on YouTube when it is about to play, so a whole
+        album or playlist can be queued at once without waiting.
+        """
+        service = None
+        for name in ("ytm", "yt"):
+            candidate = self.service_manager.services.get(name)
+            if candidate is not None and candidate.is_enabled:
+                service = candidate
+                break
+        if service is None:
+            raise errors.ServiceError("No YouTube service is available")
+        link = music_links.lookup(url)
+        return [
+            Track(
+                service=service.name,
+                url="",
+                name=song.display,
+                type=TrackType.Dynamic,
+                extra_info={
+                    "search_query": song.query,
+                    "title": song.title,
+                    "artist": song.artist,
+                    "source_url": url,
+                },
+            )
+            for song in link.tracks
+        ]
+
     def get(self, url: str, is_admin: bool) -> List[Track]:
+        url = url.strip()
+        if music_links.is_music_link(url):
+            return self._music_link_tracks(url)
         parsed_url = urlparse(url)
         if parsed_url.scheme in self.allowed_schemes:
             track = Track(url=url, type=TrackType.Direct)
