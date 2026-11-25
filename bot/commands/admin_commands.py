@@ -376,6 +376,18 @@ class RestartCommand(Command):
             os.execv(sys.executable, args)
 
 
+class YouTubeLoginCommand(Command):
+    @property
+    def help(self) -> str:
+        return self.translator.translate(
+            "Checks whether YouTube still accepts the bot's login (its cookies)"
+        )
+
+    def __call__(self, arg: str, user: User) -> Optional[str]:
+        watch = self._bot.youtube_login_watch
+        return watch.describe(watch.check(force=True, asked_by_admin=True))
+
+
 class GetChannelIDCommand(Command):
     @property
     def help(self) -> str:
