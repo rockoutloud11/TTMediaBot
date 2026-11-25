@@ -4,6 +4,14 @@ All notable updates to this fork are documented here, in reverse chronological o
 
 ---
 
+## 🔔 November 25, 2026 — Signed-Out Warning
+
+- **The bot warns its admins when YouTube stops accepting its cookies.** Every 30 minutes the bot asks the YouTube bridge whether youtube.com still treats its cookies as signed in. When the login is lost, every online admin gets a private message (retried at each check until an admin is online), and another when it works again.
+- **New admin command `yl`** checks the YouTube login on demand.
+- **New bridge endpoint `/login-status`** (`bot_id`, optional `force`) returns `cookies`, `logged_in` and `checked_at`, cached per cookie file for 10 minutes. Cookie values are never logged.
+
+---
+
 ## 🎧 November 25, 2026 — SABR Streaming and New Home
 
 - **SABR audio streaming in the YouTube bridge.** YouTube stopped sending plain stream links (`No valid URL to decipher` on every song). The bridge now fetches audio over SABR with `googlevideo` 5.0.1 and serves it to mpv from `/sabr/<videoId>`. Range requests (seeking) work, stalled streams end cleanly after 15 seconds, and `YOUTUBE_BRIDGE_SABR=0` turns it off.

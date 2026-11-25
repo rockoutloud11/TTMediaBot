@@ -47,6 +47,12 @@ The YouTube bridge now streams audio over **SABR**, the protocol YouTube's own w
 
 SABR does not replace cookies: if the account is no longer signed in, YouTube only serves about the first minute of each song. See [How to Obtain Cookies](#how-to-obtain-cookies).
 
+## 🔔 Signed-Out Warning
+
+When YouTube stops accepting a bot's cookies, it quietly treats the bot as signed out: songs fail instantly or stop after about a minute, and nothing says why. The bot now checks its YouTube login every 30 minutes (one request to youtube.com) and sends a private message to every online admin when the login is lost, and again when it works again. If no admin is online, it tries again at the next check.
+
+Admins can check at any time with the **yl** command.
+
 ## 🔀 Switching from JoaoDEVWHADS/TTMediaBot
 
 Existing installs keep updating from João's repository until they are pointed here. From your `TTMediaBot` folder, run:
@@ -270,6 +276,7 @@ Send these commands to the bot via private message (PM) or in the channel (if en
 | **rs** | | Restarts the bot. |
 | **q** | | Quits the bot. |
 | **gcid** | | Gets the current channel ID. |
+| **yl** | | Checks whether YouTube still accepts the bot's login (cookies). |
 
 ---
 
