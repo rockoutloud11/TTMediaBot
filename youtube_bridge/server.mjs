@@ -152,6 +152,54 @@ async function getWebSessionData(cookie) {
   };
 }
 
+// ---------------------------------------------------------------------------
+// Login check. When a bot's cookies stop working, YouTube quietly treats the
+// bot as signed out and only serves about the first minute of each song.
+// /login-status loads youtube.com once with the bot's cookies and reports
+// YouTube's own LOGGED_IN flag. Results are cached per cookie file for 10
+// minutes (force: true skips the cache). Cookie values are never logged.
+// ---------------------------------------------------------------------------
+const LOGIN_CHECK_TTL_MS = 10 * 60 * 1000;
+const LOGIN_CHECK_USER_AGENT =
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36';
+const loginStatusCache = new Map();
+
+async function checkLoginUncached(cookieFile) {
+  const checkedAt = new Date().toISOString();
+  const cookie = await netscapeCookiesToHeader(cookieFile);
+  if (!cookie) return { cookies: false, logged_in: null, checked_at: checkedAt };
+  const response = await fetch('https://www.youtube.com/', {
+    headers: {
+      'Cookie': cookie,
+      'User-Agent': LOGIN_CHECK_USER_AGENT,
+      'Accept-Language': 'en-US,en;q=0.9'
+    }
+  });
+  if (!response.ok) {
+    return { cookies: true, logged_in: null, checked_at: checkedAt, error: `youtube.com returned HTTP ${response.status}` };
+  }
+  const page = await response.text();
+  const match = page.match(/"LOGGED_IN"\s*:\s*(true|false)/);
+  if (!match) {
+    return { cookies: true, logged_in: null, checked_at: checkedAt, error: 'youtube.com did not report a login state' };
+  }
+  return { cookies: true, logged_in: match[1] === 'true', checked_at: checkedAt };
+}
+
+async function getLoginStatus(body) {
+  const cookieFile = body.cookie_file;
+  const key = cookieFileKey(cookieFile);
+  const cached = loginStatusCache.get(key);
+  if (cached && !body.force && Date.now() - cached.at < LOGIN_CHECK_TTL_MS) return cached.result;
+  for (const cachedKey of loginStatusCache.keys()) {
+    if (cachedKey !== key && cachedKey.startsWith(`${cookieFile}:`)) loginStatusCache.delete(cachedKey);
+  }
+  const result = await checkLoginUncached(cookieFile);
+  if (result.logged_in !== null || !result.cookies) loginStatusCache.set(key, { at: Date.now(), result });
+  console.log(`[youtube-bridge] login check bot=${body.bot_id}: cookies=${result.cookies} logged_in=${result.logged_in}${result.error ? ` (${result.error})` : ''}`);
+  return result;
+}
+
 async function getSession(cookieFile) {
   const key = cookieFileKey(cookieFile);
   const cached = sessionCache.get(key);
@@ -1218,6 +1266,7 @@ const server = http.createServer(async (req, res) => {
     if (req.url === '/search') return json(res, 200, await searchVideos(body));
     if (req.url === '/recommendations') return json(res, 200, await getMusicRecommendations(body));
     if (req.url === '/download-plan') return json(res, 200, await getDownloadPlan(body));
+    if (req.url === '/login-status') return json(res, 200, await getLoginStatus(body));
     return json(res, 404, { error: 'Not found' });
   } catch (error) {
     console.error('[youtube-bridge]', error);
