@@ -110,6 +110,10 @@ class YouTubeBridge:
     ) -> dict[str, Any]:
         return self._post("/search", query=query, limit=limit, mode=mode)
 
+    def login_status(self, force: bool = False) -> dict[str, Any]:
+        """Asks the bridge whether YouTube still accepts this bot's cookies."""
+        return self._post("/login-status", timeout=(5, 30), force=force)
+
     def recommendations(self, video_id: str, limit: int = 20) -> dict[str, Any]:
         return self._post("/recommendations", video_id=video_id, limit=limit)
 
