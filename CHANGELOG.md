@@ -4,6 +4,14 @@ All notable updates to this fork are documented here, in reverse chronological o
 
 ---
 
+## 🔊 November 28, 2026 — Volume Leveling
+
+- **Loud and quiet songs are evened out automatically** with an mpv audio filter (`dynaudnorm`), so the volume no longer needs changing between genres. On by default. The `v` volume command still sets the overall level.
+- **New command `vn`** turns it on or off (`vn on`, `vn off`; no argument switches; `vn status` reports). It applies to everyone and is saved with `sc` like other settings.
+- New settings in the `player` section of the config: `normalize_volume` (true/false) and `normalize_filter` (the filter text, for tuning). The first few seconds of a very quiet song are a little quieter while the filter settles.
+
+---
+
 ## 🔔 November 25, 2026 — Signed-Out Warning Reaches Server Admins
 
 - The signed-out warning now also goes to users logged in with a TeamTalk server admin account, matching who can already use admin commands. Before, only usernames on the bot's admin list got it.
