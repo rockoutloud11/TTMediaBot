@@ -180,7 +180,7 @@ class VolumeLevelingCommand(Command):
     @property
     def help(self) -> str:
         return self.translator.translate(
-            "[on/off] Evens out loud and quiet songs so you do not keep changing the volume. Without an argument it switches on or off. With 'status' it only tells you which it is"
+            "[on/off] Brings every song to the same level, so you do not keep changing the volume. Nothing changes inside a song. Takes effect from the next song. Without an argument it switches on or off. With 'status' it only tells you which it is"
         )
 
     def __call__(self, arg: str, user: User) -> Optional[str]:
@@ -192,22 +192,25 @@ class VolumeLevelingCommand(Command):
         elif arg in ("off", "0", "no"):
             enabled = False
         elif arg == "status":
-            enabled = self.player.volume_leveling
-            return self._describe(enabled)
+            return self._describe(self.player.volume_leveling)
         else:
             raise errors.InvalidArgumentError()
         try:
             self.player.set_volume_leveling(enabled)
         except errors.ServiceError:
             return self.translator.translate("Could not change volume leveling")
-        return self._describe(enabled)
+        return self._describe(enabled, changed=True)
 
-    def _describe(self, enabled: bool) -> str:
+    def _describe(self, enabled: bool, changed: bool = False) -> str:
         if enabled:
-            return self.translator.translate(
-                "Volume leveling is on. Loud and quiet songs are evened out"
+            text = self.translator.translate(
+                "Volume leveling is on. Each song is brought to the same level"
             )
-        return self.translator.translate("Volume leveling is off")
+        else:
+            text = self.translator.translate("Volume leveling is off")
+        if changed:
+            text += self.translator.translate(", from the next song")
+        return text
 
 
 class SeekBackCommand(Command):
