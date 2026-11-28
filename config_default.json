@@ -18,6 +18,8 @@
         "max_volume": 100,
         "volume_fading": true,
         "volume_fading_interval": 0.025,
+        "normalize_volume": true,
+        "normalize_filter": "dynaudnorm=f=500:g=15:p=0.8:m=10",
         "seek_step": 5,
         "player_options": {}
     },
