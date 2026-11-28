@@ -45,6 +45,8 @@ class Player:
             "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36",
             "ytdl": False,
         }
+        if self.config.normalize_volume:
+            mpv_options["af"] = self._normalize_filter_chain()
         mpv_options.update(self.config.player_options)
         self._default_user_agent = mpv_options.get("user_agent", "")
         try:
@@ -72,6 +74,23 @@ class Player:
         self._prefetch_timer: Optional[threading.Timer] = None
 
         self.queue: QueueManager = QueueManager()
+
+    def _normalize_filter_chain(self) -> str:
+        return f"lavfi=[{self.config.normalize_filter}]"
+
+    @property
+    def volume_leveling(self) -> bool:
+        return bool(self.config.normalize_volume)
+
+    def set_volume_leveling(self, enabled: bool) -> None:
+        """Turns the filter that evens out loud and quiet songs on or off."""
+        self.config.normalize_volume = bool(enabled)
+        chain = self._normalize_filter_chain() if enabled else ""
+        try:
+            self._player.af = chain
+        except Exception:  # noqa: BLE001
+            logging.exception("Could not change the volume leveling filter")
+            raise errors.ServiceError("Could not change the volume leveling filter")
 
     def initialize(self) -> None:
         logging.debug("Initializing player")
