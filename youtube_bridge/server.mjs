@@ -487,6 +487,18 @@ function invalidateResolution(body) {
   return { invalidated: true };
 }
 
+// How much louder than YouTube's reference level this song is (dB); null if
+// YouTube did not say. The bot turns the song down by this much.
+function loudnessDb(info, format) {
+  const candidates = [format?.loudness_db, info?.player_config?.audio_config?.loudness_db];
+  for (const value of candidates) {
+    if (value === null || value === undefined || value === '') continue;
+    const number = Number(value);
+    if (Number.isFinite(number)) return number;
+  }
+  return null;
+}
+
 async function resolveTrackUncached(body, videoId, requestedClient) {
   const context = await getSession(body.cookie_file);
 
@@ -500,6 +512,7 @@ async function resolveTrackUncached(body, videoId, requestedClient) {
   return {
     ...metadata,
     ...formatPayload(format),
+    loudness_db: loudnessDb(info, format),
     client,
     format: 'mp3',
     http_headers: { 'User-Agent': USER_AGENT }
