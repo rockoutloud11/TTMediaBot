@@ -23,6 +23,8 @@ class PlayerModel(BaseModel):
     max_volume: int = 100
     volume_fading: bool = True
     volume_fading_interval: float = 0.025
+    normalize_volume: bool = True
+    normalize_filter: str = "dynaudnorm=f=500:g=15:p=0.8:m=10"
     seek_step: int = 5
     player_options: Dict[str, Any] = {}
 
