@@ -176,6 +176,40 @@ class VolumeCommand(Command):
             return str(self.player.volume)
 
 
+class VolumeLevelingCommand(Command):
+    @property
+    def help(self) -> str:
+        return self.translator.translate(
+            "[on/off] Evens out loud and quiet songs so you do not keep changing the volume. Without an argument it switches on or off. With 'status' it only tells you which it is"
+        )
+
+    def __call__(self, arg: str, user: User) -> Optional[str]:
+        arg = arg.strip().lower()
+        if arg in ("", "toggle"):
+            enabled = not self.player.volume_leveling
+        elif arg in ("on", "1", "yes"):
+            enabled = True
+        elif arg in ("off", "0", "no"):
+            enabled = False
+        elif arg == "status":
+            enabled = self.player.volume_leveling
+            return self._describe(enabled)
+        else:
+            raise errors.InvalidArgumentError()
+        try:
+            self.player.set_volume_leveling(enabled)
+        except errors.ServiceError:
+            return self.translator.translate("Could not change volume leveling")
+        return self._describe(enabled)
+
+    def _describe(self, enabled: bool) -> str:
+        if enabled:
+            return self.translator.translate(
+                "Volume leveling is on. Loud and quiet songs are evened out"
+            )
+        return self.translator.translate("Volume leveling is off")
+
+
 class SeekBackCommand(Command):
     @property
     def help(self) -> str:

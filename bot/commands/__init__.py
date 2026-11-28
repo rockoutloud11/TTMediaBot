@@ -53,6 +53,7 @@ class CommandProcessor:
             "sb": user_commands.SeekBackCommand,
             "sf": user_commands.SeekForwardCommand,
             "v": user_commands.VolumeCommand,
+            "vn": user_commands.VolumeLevelingCommand,
             "sp": user_commands.SpeedCommand,
             "f": user_commands.FavoritesCommand,
             "m": user_commands.ModeCommand,
