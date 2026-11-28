@@ -231,7 +231,7 @@ Send these commands to the bot via private message (PM) or in the channel (if en
 | **n** | `[number/?]` | Plays the next track, jumps to a positive or negative track index, or reports the current position with `?`. |
 | **b** | | Plays the previous track. |
 | **v** | `[0-100]` | Sets volume. No arg shows current volume. |
-| **vn** | `[on/off/status]` | Volume leveling: evens out loud and quiet songs so you do not keep changing the volume. On by default. No argument switches it; `status` only reports. It applies to everyone, and is remembered after a restart only if an admin saves settings (`sc`). |
+| **vn** | `[on/off/status]` | Volume leveling: brings every song to the same level using the loudness number YouTube stores for each song, so you do not keep changing the volume. Nothing changes inside a song. On by default. No argument switches it; `status` only reports. It applies to everyone from the next song, and is remembered after a restart only if an admin saves settings (`sc`). |
 | **sb** | `[seconds]` | Seeks backward. Default step if no arg. |
 | **sf** | `[seconds]` | Seeks forward. Default step if no arg. |
 | **c** | `[number/?]` | Selects a positive or negative track index; without an argument or with `?`, reports the current position. |

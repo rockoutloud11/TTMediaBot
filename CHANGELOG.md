@@ -6,9 +6,11 @@ All notable updates to this fork are documented here, in reverse chronological o
 
 ## 🔊 November 28, 2026 — Volume Leveling
 
-- **Loud and quiet songs are evened out automatically** with an mpv audio filter (`dynaudnorm`), so the volume no longer needs changing between genres. On by default. The `v` volume command still sets the overall level.
-- **New command `vn`** turns it on or off (`vn on`, `vn off`; no argument switches; `vn status` reports). It applies to everyone and is saved with `sc` like other settings.
-- New settings in the `player` section of the config: `normalize_volume` (true/false) and `normalize_filter` (the filter text, for tuning). The first few seconds of a very quiet song are a little quieter while the filter settles.
+- **Every song is brought to the same level.** YouTube stores how much louder than its reference level each song is (`loudnessDb`). The YouTube bridge now passes that number on (`loudness_db` in `/resolve` and search results) and the player turns each song down by that much (mpv `replaygain-fallback`, set before each song). The level is fixed for the whole song: nothing moves inside it. Songs already quieter than the reference are left alone.
+- **New command `vn`** turns it on or off (`vn on`, `vn off`; no argument switches; `vn status` reports). It applies to everyone from the next song and is saved with `sc` like other settings.
+- New `player` settings: `normalize_volume` (true/false), `normalize_max_cut_db` (default 15) and `normalize_max_boost_db` (default 0: songs are only turned down; raise it to also lift quiet songs, which can clip).
+- The bot logs one line per song (`volume leveling: loudness_db=... gain_db=...`). **Check Volume Leveling.bat** (Windows helper) summarizes them.
+- A first version used a live audio filter (`dynaudnorm`). It also turned down loud passages inside songs, so it was replaced the same day.
 
 ---
 
