@@ -45,8 +45,11 @@ class Player:
             "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36",
             "ytdl": False,
         }
-        if self.config.normalize_volume:
-            mpv_options["af"] = self._normalize_filter_chain()
+        # Volume leveling: one fixed gain per song (set in _play), nothing
+        # changes inside a song. mpv applies it as a replay-gain fallback.
+        mpv_options["replaygain"] = "track" if self.config.normalize_volume else "no"
+        mpv_options["replaygain_fallback"] = 0
+        mpv_options["replaygain_clip"] = False
         mpv_options.update(self.config.player_options)
         self._default_user_agent = mpv_options.get("user_agent", "")
         try:
@@ -75,22 +78,54 @@ class Player:
 
         self.queue: QueueManager = QueueManager()
 
-    def _normalize_filter_chain(self) -> str:
-        return f"lavfi=[{self.config.normalize_filter}]"
-
     @property
     def volume_leveling(self) -> bool:
         return bool(self.config.normalize_volume)
 
-    def set_volume_leveling(self, enabled: bool) -> None:
-        """Turns the filter that evens out loud and quiet songs on or off."""
-        self.config.normalize_volume = bool(enabled)
-        chain = self._normalize_filter_chain() if enabled else ""
+    def _leveling_gain_db(self, track: Optional[Track]) -> float:
+        """The fixed gain (dB) that brings this song to YouTube's reference level.
+
+        YouTube stores how much louder than its reference each song is
+        ('loudness_db'); turning the song down by that much is what the
+        YouTube app does. Songs already below the reference are left alone
+        unless normalize_max_boost_db allows raising them. 0 if unknown.
+        """
+        if not self.config.normalize_volume or track is None:
+            return 0.0
+        info = getattr(track, "extra_info", None) or {}
+        value = info.get("loudness_db")
+        if value is None or isinstance(value, bool):
+            return 0.0
         try:
-            self._player.af = chain
+            loudness = float(value)
+        except (TypeError, ValueError):
+            return 0.0
+        if loudness != loudness or abs(loudness) > 60:  # NaN or nonsense
+            return 0.0
+        gain = -loudness
+        return max(-abs(self.config.normalize_max_cut_db), min(abs(self.config.normalize_max_boost_db), gain))
+
+    def _apply_leveling(self, track: Optional[Track]) -> None:
+        # Never let a leveling problem stop a song from playing.
+        try:
+            gain = self._leveling_gain_db(track)
+            self._player.replaygain_fallback = gain
+            info = (getattr(track, "extra_info", None) or {}) if track is not None else {}
+            logging.info(
+                f"[Player] volume leveling: loudness_db={info.get('loudness_db')} gain_db={gain:.1f}"
+            )
+        except Exception as e:  # noqa: BLE001
+            logging.debug(f"[Player] Could not apply volume leveling gain: {e}")
+
+    def set_volume_leveling(self, enabled: bool) -> None:
+        """Turns per-song volume leveling on or off (from the next song)."""
+        self.config.normalize_volume = bool(enabled)
+        try:
+            self._player.replaygain = "track" if enabled else "no"
         except Exception:  # noqa: BLE001
-            logging.exception("Could not change the volume leveling filter")
-            raise errors.ServiceError("Could not change the volume leveling filter")
+            logging.exception("Could not change volume leveling")
+            raise errors.ServiceError("Could not change volume leveling")
+        self._apply_leveling(self.track)
 
     def initialize(self) -> None:
         logging.debug("Initializing player")
@@ -196,6 +231,7 @@ class Player:
             except Exception as e:
                 logging.debug(f"[Player] Failed to apply HTTP headers to MPV: {e}")
                 
+        self._apply_leveling(self.track)
         self._player.pause = False
         self._player.play(arg)
         self._log_playback_timing("mpv_play_submitted", trace)
